@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Form, Input, Button, Select, InputNumber, message, Spin, Upload } from "antd"
+import { Form, Input, Button, Select, InputNumber, message, Spin, Upload, Space } from "antd"
 import { getHostAppList } from "../api/game"
 import { TOKEN_EXPIRED_EVENT } from "../api/auth"
 import { uploadPublicFile } from "../api/upload"
@@ -309,10 +309,12 @@ const GameForm: React.FC<GameFormProps> = ({
         </Form.Item>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel}>取消</Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            提交
-          </Button>
+          <Space>
+            <Button onClick={onCancel}>取消</Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              提交
+            </Button>
+          </Space>
         </div>
       </Form>
     </div>

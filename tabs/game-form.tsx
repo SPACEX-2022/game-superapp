@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { render } from "react-dom"
 import "../styles/globals.css" 
-import { ConfigProvider } from "antd"
+import { ConfigProvider, Modal } from "antd"
 import zhCN from "antd/lib/locale/zh_CN"
 import GameForm from "../components/GameForm"
 import { addGame } from "../api/game"
@@ -57,9 +57,15 @@ function GameFormPage() {
     // 调用API添加游戏
     const response = await addGame(values)
     
-    if (response.code === "0") {
-      // 添加成功后关闭窗口
-      window.close()
+    if (response.code === "0000") {
+      // 添加成功后显示提示窗口
+      Modal.success({
+        title: '添加成功',
+        content: '游戏已成功添加到游戏库',
+        onOk: () => {
+          window.close()
+        }
+      })
     } else {
       throw new Error(response.message || "添加游戏失败")
     }
