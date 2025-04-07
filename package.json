@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "package": "npm run build && plasmo package"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",

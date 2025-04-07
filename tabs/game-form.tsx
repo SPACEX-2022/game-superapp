@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react"
 import { render } from "react-dom"
 import "../styles/globals.css" 
-import { ConfigProvider, Modal } from "antd"
+import { ConfigProvider, Modal, Button, Typography, Space, Row, Col } from "antd"
 import zhCN from "antd/lib/locale/zh_CN"
 import GameForm from "../components/GameForm"
 import { addGame } from "../api/game"
 import type { GameInfo } from "../api/game"
-import { checkIsLoggedIn, TOKEN_EXPIRED_EVENT } from "../api/auth"
+import { checkIsLoggedIn, TOKEN_EXPIRED_EVENT, getServerUrl, clearToken } from "../api/auth"
 import LoginForm from "../components/LoginForm"
+
+const { Text } = Typography
 
 function GameFormPage() {
   const [initialData, setInitialData] = useState<any>({})
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [serverUrl, setServerUrl] = useState("")
 
   // 监听token过期事件
   useEffect(() => {
@@ -31,6 +34,8 @@ function GameFormPage() {
   useEffect(() => {
     // 检查是否已登录
     setIsLoggedIn(checkIsLoggedIn())
+    // 获取服务器地址
+    setServerUrl(getServerUrl())
     
     // 获取传递过来的游戏数据
     chrome.storage.local.get("gameFormData", (result) => {
@@ -47,6 +52,12 @@ function GameFormPage() {
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true)
+    setServerUrl(getServerUrl())
+  }
+
+  const handleLogout = () => {
+    clearToken()
+    setIsLoggedIn(false)
   }
 
   const handleSubmit = async (values: GameInfo) => {
@@ -79,11 +90,26 @@ function GameFormPage() {
     <ConfigProvider locale={zhCN}>
       <div className="min-h-screen bg-gray-50 p-4">
         {isLoggedIn ? (
-          <GameForm
-            initialData={initialData}
-            onCancel={handleCancel}
-            onSubmit={handleSubmit}
-          />
+          <>
+            <div className="mb-4 rounded bg-white p-4 shadow-sm">
+              <Row justify="space-between" align="middle" className="w-full">
+                <Col flex="1 1 auto">
+                  <Text strong>当前服务器: </Text>
+                  <Text>{serverUrl}</Text>
+                </Col>
+                <Col flex="0 0 auto">
+                  <Button type="primary" danger onClick={handleLogout}>
+                    退出登录
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+            <GameForm
+              initialData={initialData}
+              onCancel={handleCancel}
+              onSubmit={handleSubmit}
+            />
+          </>
         ) : (
           <LoginForm onLoginSuccess={handleLoginSuccess} />
         )}
