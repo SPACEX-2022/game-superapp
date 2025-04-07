@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Form, Input, Button, Select, InputNumber, message, Spin } from "antd"
 import { getHostAppList } from "../api/game"
-import { TOKEN_KEY } from "../api/auth"
+import { TOKEN_EXPIRED_EVENT } from "../api/auth"
 import type { HostAppInfo } from "../api/game"
 
 interface GameFormProps {
@@ -31,18 +31,26 @@ const GameForm: React.FC<GameFormProps> = ({
   const [hostAppList, setHostAppList] = useState<HostAppInfo[]>([])
   const [fetchingApps, setFetchingApps] = useState(false)
 
+  // 监听token过期事件
+  useEffect(() => {
+    const handleTokenExpired = (event) => {
+      // 返回到登录界面的逻辑，可能需要调用onCancel或由父组件处理
+      onCancel()
+    }
+
+    window.addEventListener(TOKEN_EXPIRED_EVENT, handleTokenExpired)
+
+    return () => {
+      window.removeEventListener(TOKEN_EXPIRED_EVENT, handleTokenExpired)
+    }
+  }, [onCancel])
+
   // 加载宿主应用列表
   useEffect(() => {
     const fetchHostApps = async () => {
       try {
         setFetchingApps(true)
-        const token = localStorage.getItem(TOKEN_KEY)
-        if (!token) {
-          message.error("未登录，无法获取宿主应用列表")
-          return
-        }
-
-        const response = await getHostAppList(token)
+        const response = await getHostAppList()
         if (response.code === "0000") {
           setHostAppList(response.result || [])
         } else {
