@@ -45,7 +45,7 @@ function GameFormPage() {
     // 调用API添加游戏
     const response = await addGame(values, token)
     
-    if (response.code === "0") {
+    if (response.code === "0000") {
       // 添加成功后关闭窗口
       window.close()
     } else {

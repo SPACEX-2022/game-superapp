@@ -25,13 +25,10 @@ const GameForm: React.FC<GameFormProps> = ({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [tags, setTags] = useState<string[]>(initialData.tags || [])
-  const [tagInput, setTagInput] = useState("")
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true)
-      // 添加标签到提交数据
-      values.tags = tags
       await onSubmit(values)
       message.success("游戏添加成功")
     } catch (error) {
@@ -41,24 +38,13 @@ const GameForm: React.FC<GameFormProps> = ({
     }
   }
 
-  const addTag = () => {
-    if (tagInput && !tags.includes(tagInput)) {
-      setTags([...tags, tagInput])
-      setTagInput("")
-    }
-  }
-
-  const removeTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag))
-  }
-
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">添加游戏</h2>
       <Form
         form={form}
         layout="vertical"
-        initialValues={initialData}
+        initialValues={{...initialData, tags: tags}}
         onFinish={handleSubmit}
       >
         <Form.Item
@@ -141,30 +127,18 @@ const GameForm: React.FC<GameFormProps> = ({
           <Input placeholder="请输入游戏本地化名称" />
         </Form.Item>
 
-        <Form.Item label="标签(tags)">
-          <div className="flex mb-2">
-            <Input
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              placeholder="输入标签"
-              onPressEnter={addTag}
-              className="flex-1 mr-2"
-            />
-            <Button onClick={addTag}>添加</Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <div key={tag} className="bg-blue-100 px-2 py-1 rounded flex items-center">
-                <span>{tag}</span>
-                <button 
-                  onClick={() => removeTag(tag)}
-                  className="ml-1 text-red-500 text-xs"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+        <Form.Item 
+          label="标签(tags)" 
+          name="tags"
+          initialValue={tags}
+        >
+          <Select
+            mode="tags"
+            style={{ width: '100%' }}
+            placeholder="请输入标签，回车确认"
+            onChange={(value) => setTags(value)}
+            tokenSeparators={[',']}
+          />
         </Form.Item>
 
         <div className="flex justify-end gap-2 mt-4">

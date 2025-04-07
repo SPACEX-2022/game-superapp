@@ -27,7 +27,7 @@ export interface ApiResponse<T> {
 // 添加游戏到服务器
 export const addGame = async (gameInfo: GameInfo, token: string): Promise<ApiResponse<any>> => {
   const serverUrl = getServerUrl()
-  const url = `${serverUrl}/mgr_api/game/add`
+  const url = `${serverUrl}/mgr_api/game_mgr/create_game`
 
   try {
     const response = await fetch(url, {

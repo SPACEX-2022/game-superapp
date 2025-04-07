@@ -9,4 +9,4 @@ alwaysApply: true
 - 这是个使用 plasmo 框架搭建的 chrome 浏览器插件项目
 - 技术栈：React、Antd、TailwindCSS、crypto-js、fetch
 - 该项目的主要功能是拓展 superapp.tcmppapi.com 网站的功能
-- 做好文件、模块的拆分，api 调用单独分模块封装
+- 做好文件、模块的拆分，api 调用单独分模块封装，判断接口是否调用成功判断 code === '0000'，错误信息在 message 里
