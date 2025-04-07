@@ -11,6 +11,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         height: 800
       })
     })
+  } else if (message.type === "SHOW_MESSAGE") {
+    // 处理显示消息的请求
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        // 向当前活动标签页注入消息显示脚本
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "DISPLAY_MESSAGE",
+          data: message.data
+        })
+      }
+    })
   }
   
   // 返回true表示将使用sendResponse异步响应

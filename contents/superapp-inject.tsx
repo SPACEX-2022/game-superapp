@@ -95,9 +95,30 @@ function injectAddButton() {
         data: rowData
       })
     })
+
+    // 创建按钮
+    const syncDataButton = document.createElement('button')
+    syncDataButton.className = 'tea app-tcmpp-btn tea app-tcmpp-btn--link game-superapp-btn'
+    syncDataButton.textContent = '同步数据'
+    
+    // 添加同步数据按钮的点击事件
+    syncDataButton.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      
+      // 发送消息到扩展
+      chrome.runtime.sendMessage({
+        type: "SHOW_MESSAGE",
+        data: {
+          content: "功能正在开发中，敬请期待！",
+          type: "info"
+        }
+      })
+    })
     
     // 添加按钮到单元格
     actionCell.prepend(addButton)
+    actionCell.prepend(syncDataButton)
   })
 }
 
