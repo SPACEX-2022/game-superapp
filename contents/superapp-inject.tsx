@@ -42,12 +42,39 @@ function injectAddButton() {
     const cellNodes = row.querySelectorAll('td')
     const rowData = {}
     
-    // 收集表格行中可能包含的数据
+    // 检查行是否有足够的单元格
+    if (cellNodes.length >= 2) {
+      // 获取第一列数据
+      const firstCell = cellNodes[0]
+      // 获取第一列中的img元素（作为iconUrl）
+      const imgElement = firstCell.querySelector('img')
+      if (imgElement && imgElement.src) {
+        rowData['iconUrl'] = imgElement.src
+      }
+      
+      // 获取第一列中的span元素内容（作为localizedName）
+      const firstCellSpan = firstCell.querySelector('span')
+      if (firstCellSpan) {
+        rowData['localizedName'] = firstCellSpan.textContent.trim()
+      }
+      
+      // 获取第二列中的span元素内容（作为appId）
+      const secondCell = cellNodes[1]
+      const secondCellSpan = secondCell.querySelector('span')
+      if (secondCellSpan) {
+        rowData['appId'] = secondCellSpan.textContent.trim()
+      }
+    }
+    
+    // 收集表格行中的其他数据（保留原有逻辑作为备用）
     cellNodes.forEach((cell, index) => {
       const header = document.querySelector(`.tea.app-tcmpp-table__box thead th:nth-child(${index + 1})`)
       if (header) {
         const headerText = header.textContent.trim()
-        rowData[headerText] = cell.textContent.trim()
+        // 避免覆盖已经通过特定元素获取的数据
+        if (!['iconUrl', 'localizedName', 'appId'].includes(headerText)) {
+          rowData[headerText] = cell.textContent.trim()
+        }
       }
     })
     
@@ -55,6 +82,9 @@ function injectAddButton() {
     addButton.addEventListener('click', (e) => {
       e.preventDefault()
       e.stopPropagation()
+      
+      // 打印行数据用于调试
+      console.log('点击了添加到游戏库按钮，行数据:', rowData)
       
       // 发送消息到扩展
       chrome.runtime.sendMessage({
@@ -103,7 +133,7 @@ function observeTableChanges() {
   })
   
   // 只监听表格容器的变化，而不是整个document
-  observer.observe(tableContainer, {
+  observer.observe(document.body, {
     childList: true,
     subtree: true
   })
