@@ -17,6 +17,24 @@ export interface GameInfo {
   tags: string[]        // 标签，JSON数组
 }
 
+// 游戏详情接口
+export interface GameDetailInfo extends Omit<GameInfo, 'appSecret'> {
+  gameId: string        // 游戏ID
+  gameStatus: number    // 游戏状态：1-下架，2-上架
+  initialOnShelfTime: string // 首次上架时间
+  playerQty: number     // 玩家人数
+  totalConsumedBudget: number // 累计消耗预算
+  totalDeliveredScore: number // 累计发放金币
+}
+
+// 游戏列表响应接口
+export interface GameListResponse {
+  currentPage: number
+  list: GameDetailInfo[]
+  pageCount: number
+  totalCount: number
+}
+
 // 宿主应用信息接口
 export interface HostAppInfo {
   createBy: string      // 创建人
@@ -44,4 +62,12 @@ export const getHostAppList = async (): Promise<ApiResponse<HostAppInfo[]>> => {
 // 从服务器获取游戏列表
 export const getGameList = async (): Promise<ApiResponse<GameInfo[]>> => {
   return await get("/mgr_api/game/list")
+}
+
+// 根据appId查询游戏信息
+export const getGameByAppId = async (appId: string): Promise<ApiResponse<GameListResponse>> => {
+  return await post(
+    "/mgr_api/game_mgr/list_game_with_stats",
+    { param: { appId, pageNum: 1, pageSize: 1 } }
+  )
 } 
