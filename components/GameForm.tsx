@@ -1,5 +1,8 @@
-import React, { useState } from "react"
-import { Form, Input, Button, Select, InputNumber, message } from "antd"
+import React, { useState, useEffect } from "react"
+import { Form, Input, Button, Select, InputNumber, message, Spin } from "antd"
+import { getHostAppList } from "../api/game"
+import { TOKEN_KEY } from "../api/auth"
+import type { HostAppInfo } from "../api/game"
 
 interface GameFormProps {
   initialData?: any
@@ -25,6 +28,35 @@ const GameForm: React.FC<GameFormProps> = ({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [tags, setTags] = useState<string[]>(initialData.tags || [])
+  const [hostAppList, setHostAppList] = useState<HostAppInfo[]>([])
+  const [fetchingApps, setFetchingApps] = useState(false)
+
+  // 加载宿主应用列表
+  useEffect(() => {
+    const fetchHostApps = async () => {
+      try {
+        setFetchingApps(true)
+        const token = localStorage.getItem(TOKEN_KEY)
+        if (!token) {
+          message.error("未登录，无法获取宿主应用列表")
+          return
+        }
+
+        const response = await getHostAppList(token)
+        if (response.code === "0000") {
+          setHostAppList(response.result || [])
+        } else {
+          message.warning(`获取宿主应用列表失败: ${response.message}`)
+        }
+      } catch (error) {
+        message.error(`获取宿主应用列表错误: ${error.message}`)
+      } finally {
+        setFetchingApps(false)
+      }
+    }
+
+    fetchHostApps()
+  }, [])
 
   const handleSubmit = async (values) => {
     try {
@@ -106,9 +138,17 @@ const GameForm: React.FC<GameFormProps> = ({
         <Form.Item
           label="宿主应用代码(hostAppCode)"
           name="hostAppCode"
-          rules={[{ required: true, message: "请输入宿主应用代码" }]}
+          rules={[{ required: true, message: "请选择宿主应用代码" }]}
         >
-          <Input placeholder="请输入宿主应用代码" />
+          <Select
+            placeholder="请选择宿主应用"
+            loading={fetchingApps}
+            notFoundContent={fetchingApps ? <Spin size="small" /> : null}
+            options={hostAppList.map(app => ({
+              value: app.hostAppCode,
+              label: `${app.name} (${app.hostAppCode})`
+            }))}
+          />
         </Form.Item>
 
         <Form.Item

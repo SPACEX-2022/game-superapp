@@ -15,6 +15,17 @@ export interface GameInfo {
   tags: string[]        // 标签，JSON数组
 }
 
+// 宿主应用信息接口
+export interface HostAppInfo {
+  createBy: string      // 创建人
+  createTime: string    // 创建时间
+  hostAppCode: string   // 宿主应用代码
+  iconUrl: string       // 应用图标url
+  name: string          // 应用名
+  updateBy: string      // 修改人
+  updateTime: string    // 更新时间
+}
+
 // 根据不同的API响应格式，可能需要调整这个接口
 export interface ApiResponse<T> {
   code: string
@@ -48,6 +59,30 @@ export const addGame = async (gameInfo: GameInfo, token: string): Promise<ApiRes
     return await response.json()
   } catch (error) {
     console.error("添加游戏错误:", error)
+    throw error
+  }
+}
+
+// 获取宿主应用列表
+export const getHostAppList = async (token: string): Promise<ApiResponse<HostAppInfo[]>> => {
+  const serverUrl = getServerUrl()
+  const url = `${serverUrl}/mgr_api/host_app_mgr/list_all_app`
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`获取宿主应用列表失败: ${response.statusText}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("获取宿主应用列表错误:", error)
     throw error
   }
 }
