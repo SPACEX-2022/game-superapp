@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react"
-import { Form, Input, Button, Select, InputNumber, message, Spin } from "antd"
+import { Form, Input, Button, Select, InputNumber, message, Spin, Upload } from "antd"
 import { getHostAppList } from "../api/game"
 import { TOKEN_EXPIRED_EVENT } from "../api/auth"
+import { uploadPublicFile } from "../api/upload"
 import type { HostAppInfo } from "../api/game"
+import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface"
 
 interface GameFormProps {
   initialData?: any
@@ -30,6 +32,10 @@ const GameForm: React.FC<GameFormProps> = ({
   const [tags, setTags] = useState<string[]>(initialData.tags || [])
   const [hostAppList, setHostAppList] = useState<HostAppInfo[]>([])
   const [fetchingApps, setFetchingApps] = useState(false)
+  
+  // 图标上传相关状态
+  const [imageUrl, setImageUrl] = useState<string>(initialData.iconUrl || '')
+  const [uploading, setUploading] = useState(false)
 
   // 监听token过期事件
   useEffect(() => {
@@ -44,6 +50,15 @@ const GameForm: React.FC<GameFormProps> = ({
       window.removeEventListener(TOKEN_EXPIRED_EVENT, handleTokenExpired)
     }
   }, [onCancel])
+
+  // 如果initialData中的iconUrl发生变化，更新imageUrl
+  useEffect(() => {
+    if (initialData.iconUrl) {
+      setImageUrl(initialData.iconUrl)
+      // 同时也更新表单中的值
+      form.setFieldsValue({ iconUrl: initialData.iconUrl })
+    }
+  }, [initialData.iconUrl, form])
 
   // 加载宿主应用列表
   useEffect(() => {
@@ -65,6 +80,61 @@ const GameForm: React.FC<GameFormProps> = ({
 
     fetchHostApps()
   }, [])
+
+  // 上传前检查文件
+  const beforeUpload = (file: RcFile) => {
+    // 检查文件类型
+    const isImage = file.type.startsWith('image/')
+    if (!isImage) {
+      message.error('只能上传图片文件!')
+      return false
+    }
+    
+    // 检查文件大小 (小于2MB)
+    const isLt2M = file.size / 1024 / 1024 < 2
+    if (!isLt2M) {
+      message.error('图片必须小于2MB!')
+      return false
+    }
+    
+    return true
+  }
+
+  // 处理自定义上传
+  const handleUpload = async (options) => {
+    const { file, onSuccess, onError, onProgress } = options
+    
+    try {
+      setUploading(true)
+      
+      // 显示上传进度
+      onProgress({ percent: 50 })
+      
+      // 调用上传API
+      const response = await uploadPublicFile(file)
+      
+      // 判断上传是否成功
+      if (response.code === "0000") {
+        const accessUrl = response.result.accessUrl
+        setImageUrl(accessUrl)
+        
+        // 更新表单中的iconUrl字段
+        form.setFieldsValue({ iconUrl: accessUrl })
+        
+        // 上传成功回调
+        onSuccess(response, file)
+        message.success('图标上传成功')
+      } else {
+        onError(new Error(response.message || '上传失败'))
+        message.error(`图标上传失败: ${response.message}`)
+      }
+    } catch (error) {
+      onError(error)
+      message.error(`图标上传错误: ${error.message}`)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = async (values) => {
     try {
@@ -160,11 +230,43 @@ const GameForm: React.FC<GameFormProps> = ({
         </Form.Item>
 
         <Form.Item
-          label="图标URL(iconUrl)"
+          label="游戏图标"
           name="iconUrl"
-          rules={[{ required: true, message: "请输入图标URL" }]}
+          rules={[{ required: true, message: "请上传游戏图标" }]}
+          extra="支持 JPG、PNG 格式，大小不超过2MB"
         >
-          <Input placeholder="请输入图标URL" />
+          <div className="flex flex-col">
+            <div className="mb-2">
+              <Upload
+                name="file"
+                listType="picture-card"
+                showUploadList={false}
+                customRequest={handleUpload}
+                beforeUpload={beforeUpload}
+              >
+                {imageUrl ? (
+                  <div style={{ width: '102px', height: '102px', overflow: 'hidden' }}>
+                    <img 
+                      src={imageUrl} 
+                      alt="游戏图标" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    {uploading ? '上传中...' : '+ 上传图片'}
+                  </div>
+                )}
+              </Upload>
+            </div>
+            <Input 
+              style={{ marginTop: '10px' }}
+              disabled={true}
+              value={imageUrl} 
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="图标URL，可直接输入或通过上传获取"
+            />
+          </div>
         </Form.Item>
 
         <Form.Item

@@ -25,12 +25,12 @@ function injectAddButton() {
   // 遍历表格行
   tableRows.forEach((row) => {
     // 检查行是否已经有添加按钮
-    if (row.querySelector('.tea.app-tcmpp-btn--link.game-superapp-btn')) {
+    if (row.querySelector('.game-superapp-btn')) {
       return
     }
     
-    // 获取操作列(通常是最后一列)
-    const actionCell = row.querySelector('td:last-child>div')
+    // 获取操作列(通常是最后一列)，尝试多种选择器
+    let actionCell = row.querySelector('td:last-child > div')
     if (!actionCell) return
     
     // 创建按钮
@@ -56,6 +56,9 @@ function injectAddButton() {
       const firstCellSpan = firstCell.querySelector('span')
       if (firstCellSpan) {
         rowData['localizedName'] = firstCellSpan.textContent.trim()
+        
+        // 同时用作cnName（如果需要的话）
+        rowData['cnName'] = firstCellSpan.textContent.trim()
       }
       
       // 获取第二列中的span元素内容（作为appId）
@@ -72,7 +75,7 @@ function injectAddButton() {
       if (header) {
         const headerText = header.textContent.trim()
         // 避免覆盖已经通过特定元素获取的数据
-        if (!['iconUrl', 'localizedName', 'appId'].includes(headerText)) {
+        if (!['iconUrl', 'localizedName', 'appId', 'cnName'].includes(headerText)) {
           rowData[headerText] = cell.textContent.trim()
         }
       }
