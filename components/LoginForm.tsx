@@ -4,9 +4,9 @@ import {
   login,
   saveToken,
   saveServerUrl,
-  DEFAULT_SERVER_URL,
-  LoginParams
+  DEFAULT_SERVER_URL
 } from "../api/auth"
+import type { LoginParams } from "../api/auth"
 
 interface LoginFormProps {
   onLoginSuccess: () => void
