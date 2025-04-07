@@ -54,9 +54,24 @@ const GameForm: React.FC<GameFormProps> = ({
   // 如果initialData中的iconUrl发生变化，更新imageUrl
   useEffect(() => {
     if (initialData.iconUrl) {
-      setImageUrl(initialData.iconUrl)
-      // 同时也更新表单中的值
-      form.setFieldsValue({ iconUrl: initialData.iconUrl })
+      // 自动下载图片并上传
+      fetch(initialData.iconUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const file = new File([blob], 'icon.jpg', { type: 'image/jpeg' })
+          uploadPublicFile(file).then((response) => {
+            if (response.code === "0000") {
+              message.success('图标上传成功')
+              setImageUrl(response.result.accessUrl)
+              form.setFieldsValue({ iconUrl: response.result.accessUrl })
+            } else {
+              throw new Error(response.message || '上传失败')
+            }
+          })
+        })
+        .catch(error => {
+          console.error('图片下载失败:', error)
+        })
     }
   }, [initialData.iconUrl, form])
 
@@ -124,13 +139,15 @@ const GameForm: React.FC<GameFormProps> = ({
         // 上传成功回调
         onSuccess(response, file)
         message.success('图标上传成功')
+
+        return accessUrl
       } else {
-        onError(new Error(response.message || '上传失败'))
-        message.error(`图标上传失败: ${response.message}`)
+        throw new Error(response.message || '上传失败')
       }
     } catch (error) {
       onError(error)
       message.error(`图标上传错误: ${error.message}`)
+      throw error
     } finally {
       setUploading(false)
     }

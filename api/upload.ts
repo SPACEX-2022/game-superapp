@@ -30,7 +30,7 @@ export const uploadPublicFile = async (file: File): Promise<ApiResponse<UploadRe
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`
+        "x-mgr-token": token
       },
       body: formData
     })
