@@ -17,6 +17,34 @@ function debounce(func, wait) {
 
 // 用于向表格中注入"添加到游戏库"按钮
 function injectAddButton() {
+  const actionBtn = document.querySelector('.app-tcmpp-layout__content-body .tea.app-tcmpp-justify-grid__col>button:first-child')
+
+  if (actionBtn) {
+    // 检查行是否已经有添加按钮
+    if (!actionBtn.parentElement.querySelector('.game-superapp-btn')) {
+        // 创建一键同步按钮
+        const syncDataButton = document.createElement('button')
+        syncDataButton.className = 'tea app-tcmpp-btn game-superapp-btn'
+        syncDataButton.textContent = '一键同步(MiniGame)'
+
+        syncDataButton.addEventListener('click', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        // 发送消息到扩展
+        chrome.runtime.sendMessage({
+            type: "SHOW_MESSAGE",
+            data: {
+            content: "功能正在开发中，敬请期待！",
+            type: "info"
+            }
+        })
+        })
+
+        actionBtn.after(syncDataButton)
+    }
+  }
+
   // 查找表格行
   const tableRows = document.querySelectorAll('.tea.app-tcmpp-table__box tbody tr')
   
@@ -36,7 +64,7 @@ function injectAddButton() {
     // 创建按钮
     const addButton = document.createElement('button')
     addButton.className = 'tea app-tcmpp-btn tea app-tcmpp-btn--link game-superapp-btn'
-    addButton.textContent = '添加到游戏库'
+    addButton.textContent = '添加到游戏库(MiniGame)'
     
     // 获取行数据
     const cellNodes = row.querySelectorAll('td')
@@ -99,7 +127,7 @@ function injectAddButton() {
     // 创建按钮
     const syncDataButton = document.createElement('button')
     syncDataButton.className = 'tea app-tcmpp-btn tea app-tcmpp-btn--link game-superapp-btn'
-    syncDataButton.textContent = '同步数据'
+    syncDataButton.textContent = '同步数据(MiniGame)'
     
     // 添加同步数据按钮的点击事件
     syncDataButton.addEventListener('click', (e) => {
